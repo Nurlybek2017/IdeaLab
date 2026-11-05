@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <title>ИдеяLab — генератор идей для хакатона</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: rgba(20, 31, 50, .88);
+      --panel-2: #17243a;
+      --text: #f4f7fb;
+      --muted: #a9b6c9;
+      --accent: #8b7cff;
+      --accent-2: #39d6b0;
+      --line: rgba(255,255,255,.10);
+      --shadow: 0 22px 70px rgba(0,0,0,.28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(900px 500px at 10% -10%, rgba(139,124,255,.24), transparent 60%),
+        radial-gradient(700px 450px at 100% 20%, rgba(57,214,176,.13), transparent 60%),
+        var(--bg);
+    }
+    .wrap { width: min(1080px, calc(100% - 36px)); margin: 0 auto; padding: 34px 0 48px; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:42px; }
+    .brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.2px; }
+    .logo { width:42px; height:42px; display:grid; place-items:center; border-radius:14px; background:linear-gradient(135deg,var(--accent),#5dcbff); font-size:21px; box-shadow:0 8px 24px #7165e855; }
+    .tag { color:var(--muted); font-size:13px; border:1px solid var(--line); border-radius:99px; padding:8px 12px; }
+    .hero { max-width:760px; margin-bottom:28px; }
+    .eyebrow { color:var(--accent-2); text-transform:uppercase; letter-spacing:2px; font-size:11px; font-weight:800; }
+    h1 { font-size:clamp(34px,6vw,60px); line-height:1.04; letter-spacing:-2px; margin:13px 0 16px; }
+    h1 span { color:#a99fff; }
+    .intro { color:var(--muted); font-size:17px; line-height:1.65; max-width:690px; margin:0; }
+    .layout { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(280px,.8fr); gap:20px; align-items:stretch; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:24px; padding:26px; box-shadow:var(--shadow); backdrop-filter:blur(14px); }
+    .card-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; }
+    h2 { font-size:18px; margin:0; }
+    .small-label { color:var(--muted); font-size:12px; }
+    .idea-box { min-height:250px; border:1px solid rgba(169,159,255,.28); border-radius:19px; padding:25px; background:linear-gradient(145deg,rgba(139,124,255,.13),rgba(57,214,176,.055)); display:flex; flex-direction:column; justify-content:center; }
+    .category { display:inline-flex; align-self:flex-start; border-radius:99px; padding:7px 11px; background:rgba(57,214,176,.12); color:#7debd0; font-size:12px; font-weight:700; margin-bottom:16px; }
+    #ideaTitle { font-size:clamp(23px,3.4vw,34px); line-height:1.2; margin:0 0 12px; letter-spacing:-.7px; }
+    #ideaDescription { color:#c2ccda; line-height:1.65; margin:0; font-size:15px; }
+    .idea-actions { display:flex; flex-wrap:wrap; gap:11px; margin-top:20px; }
+    button { cursor:pointer; border:0; border-radius:13px; padding:13px 17px; color:white; font:700 14px inherit; font-size:14px; transition:transform .16s,filter .16s,background .16s; }
+    button:hover { transform:translateY(-2px); filter:brightness(1.08); }
+    button:focus-visible { outline:3px solid #fff; outline-offset:3px; }
+    .primary { background:linear-gradient(110deg,#8b7cff,#6a8cff); box-shadow:0 9px 24px #776cff40; }
+    .secondary { background:#263650; border:1px solid var(--line); }
+    .timer-card { display:flex; flex-direction:column; }
+    .timer-note { color:var(--muted); line-height:1.5; font-size:14px; margin:9px 0 22px; }
+    .timer { text-align:center; padding:23px 12px; border-radius:18px; background:var(--panel-2); border:1px solid var(--line); }
+    .timer-value { font-variant-numeric:tabular-nums; font-size:clamp(34px,5vw,47px); letter-spacing:1px; font-weight:800; }
+    .timer-caption { color:var(--muted); font-size:12px; margin-top:7px; }
+    .timer-buttons { display:flex; gap:10px; margin-top:15px; }
+    .timer-buttons button { flex:1; }
+    .progress { height:6px; background:#293750; border-radius:99px; overflow:hidden; margin-top:17px; }
+    #progressBar { height:100%; width:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .3s; }
+    .tips { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:20px; }
+    .tip { padding:18px; background:rgba(20,31,50,.66); border:1px solid var(--line); border-radius:18px; }
+    .tip-icon { font-size:21px; }
+    .tip strong { display:block; margin:10px 0 6px; font-size:14px; }
+    .tip p { color:var(--muted); font-size:13px; line-height:1.5; margin:0; }
+    footer { color:#8190a6; font-size:12px; text-align:center; margin-top:34px; }
+    @media(max-width:760px) {
+      .wrap { padding-top:22px; }
+      header { margin-bottom:34px; }
+      .tag { display:none; }
+      .layout { grid-template-columns:1fr; }
+      .card { padding:20px; }
+      .tips { grid-template-columns:1fr; }
+      .intro { font-size:15px; }
+    }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none!important; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="brand"><div class="logo">✦</div><span>ИдеяLab</span></div>
+      <div class="tag">Твоя стартовая площадка для хакатона</div>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">Думай · Создавай · Запускай</div>
+      <h1>Найди идею.<br><span>Создай решение.</span></h1>
+      <p class="intro">Генератор идей для участников хакатонов, начинающих разработчиков и команд, которые хотят превратить интересную мысль в работающий IT-проект.</p>
+    </section>
+
+    <section class="layout" aria-label="Генератор идей и таймер">
+      <article class="card">
+        <div class="card-head">
+          <h2>🎯 Генератор идей</h2>
+          <span class="small-label" id="ideaCounter">Идея 1</span>
+        </div>
+        <div class="idea-box" aria-live="polite">
+          <span class="category" id="ideaCategory">Образование</span>
+          <h3 id="ideaTitle">Умное расписание</h3>
+          <p id="ideaDescription">Создайте сервис, который помогает ученикам и студентам планировать занятия, домашние задания и подготовку к экзаменам.</p>
+        </div>
+        <div class="idea-actions">
+          <button class="primary" id="generateBtn">✦ Сгенерировать идею</button>
+          <button class="secondary" id="copyBtn">Копировать идею</button>
+        </div>
+      </article>
+
+      <aside class="card timer-card">
+        <div class="card-head">
+          <h2>⏳ Таймер хакатона</h2>
+          <span class="small-label">24 часа</span>
+        </div>
+        <p class="timer-note">Запусти обратный отсчёт и проверь, сколько времени осталось на реализацию проекта.</p>
+        <div class="timer">
+          <div class="timer-value" id="timerDisplay" role="timer" aria-live="off">24:00:00</div>
+          <div class="timer-caption" id="timerStatus">Готов к старту</div>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+        <div class="timer-buttons">
+          <button class="primary" id="startBtn">▶ Старт</button>
+          <button class="secondary" id="resetBtn">↺ Сброс</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="tips" aria-label="Подсказки для команды">
+      <div class="tip"><div class="tip-icon">💡</div><strong>Начни с проблемы</strong><p>Выбери реальную задачу, которую твой проект сможет решить.</p></div>
+      <div class="tip"><div class="tip-icon">🧩</div><strong>Сделай прототип</strong><p>Сначала создай простую рабочую версию, а потом добавляй функции.</p></div>
+      <div class="tip"><div class="tip-icon">🚀</div><strong>Покажи результат</strong><p>Подготовь короткую демонстрацию и объясни пользу своего решения.</p></div>
+    </section>
+
+    <footer>ИдеяLab · Учебный проект для практики веб-разработки · Сделано с любопытством ✨</footer>
+  </main>
+
+  <script>
+    const ideas = [
+      { category: "Образование", title: "Умное расписание", description: "Создайте сервис, который помогает ученикам и студентам планировать занятия, домашние задания и подготовку к экзаменам." },
+      { category: "Экология", title: "ЭкоКарта города", description: "Разработайте интерактивную карту пунктов приёма батареек, пластика и макулатуры с возможностью добавлять новые точки." },
+      { category: "Здоровье", title: "Полезная привычка", description: "Создайте приложение, которое помогает формировать полезные привычки: пить воду, двигаться и вовремя отдыхать." },
+      { category: "Безопасность", title: "Антифишинг-тренажёр", description: "Сделайте обучающий тренажёр, который показывает примеры подозрительных сообщений и учит распознавать мошенничество." },
+      { category: "Город", title: "Городской помощник", description: "Создайте сайт для отправки предложений по улучшению города: освещение, дороги, доступность и общественные пространства." },
+      { category: "Культура", title: "Цифровой музей", description: "Разработайте виртуальную выставку местных достопримечательностей с фотографиями, историями и аудиоэкскурсией." },
+      { category: "Инклюзия", title: "Доступная среда", description: "Создайте карту мест с пандусами, удобными входами и доступными маршрутами для маломобильных людей." },
+      { category: "Финансы", title: "Мой бюджет", description: "Сделайте простой личный финансовый помощник, который распределяет расходы по категориям и показывает цели накопления." },
+      { category: "Волонтёрство", title: "Добрые дела рядом", description: "Создайте платформу, где организации публикуют волонтёрские задачи, а люди находят подходящие возможности помочь." },
+      { category: "Искусственный интеллект", title: "AI-помощник учёбы", description: "Разработайте интерфейс помощника, который превращает большую тему в план изучения, карточки и вопросы для самопроверки." },
+      { category: "Спорт", title: "Спорт рядом", description: "Создайте каталог бесплатных спортивных площадок и событий с фильтрами по виду спорта и району." },
+      { category: "Туризм", title: "Маршрут выходного дня", description: "Сделайте конструктор маршрутов по интересным местам региона с оценкой времени и небольшими описаниями." }
+    ];
+
+    let lastIndex = 0;
+    let remaining = 24 * 60 * 60;
+    let timerInterval = null;
+    let running = false;
+
+    const $ = (id) => document.getElementById(id);
+    function generateIdea() {
+      let next;
+      do { next = Math.floor(Math.random() * ideas.length); } while (ideas.length > 1 && next === lastIndex);
+      lastIndex = next;
+      const idea = ideas[next];
+      $("ideaCategory").textContent = idea.category;
+      $("ideaTitle").textContent = idea.title;
+      $("ideaDescription").textContent = idea.description;
+      $("ideaCounter").textContent = `Идея ${next + 1} из ${ideas.length}`;
+    }
+    function copyIdea() {
+      const text = `${$("ideaTitle").textContent}\nКатегория: ${$("ideaCategory").textContent}\n${$("ideaDescription").textContent}`;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(showCopied).catch(() => fallbackCopy(text));
+      } else fallbackCopy(text);
+    }
+    function showCopied() {
+      const button = $("copyBtn");
+      const old = button.textContent;
+      button.textContent = "✓ Скопировано";
+      setTimeout(() => button.textContent = old, 1400);
+    }
+    function fallbackCopy(text) {
+      const area = document.createElement("textarea");
+      area.value = text; document.body.appendChild(area); area.select();
+      try { document.execCommand("copy"); showCopied(); } catch (e) { $("copyBtn").textContent = "Выделите текст вручную"; }
+      area.remove();
+    }
+    function renderTimer() {
+      const hours = Math.floor(remaining / 3600);
+      const minutes = Math.floor((remaining % 3600) / 60);
+      const seconds = remaining % 60;
+      $("timerDisplay").textContent = [hours, minutes, seconds].map(v => String(v).padStart(2, "0")).join(":");
+      $("progressBar").style.width = `${(remaining / 86400) * 100}%`;
+      if (remaining === 0) {
+        $("timerStatus").textContent = "Время вышло! Покажи свой проект 🚀";
+        stopTimer();
+      }
+    }
+    function startTimer() {
+      if (running || remaining <= 0) return;
+      running = true;
+      $("timerStatus").textContent = "Хакатон идёт — удачи!";
+      $("startBtn").textContent = "Ⅱ Пауза";
+      timerInterval = setInterval(() => {
+        if (remaining > 0) remaining--;
+        renderTimer();
+      }, 1000);
+    }
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      running = false;
+      $("startBtn").textContent = "▶ Старт";
+    }
+    function resetTimer() {
+      stopTimer();
+      remaining = 86400;
+      $("timerStatus").textContent = "Готов к старту";
+      renderTimer();
+    }
+    $("generateBtn").addEventListener("click", generateIdea);
+    $("copyBtn").addEventListener("click", copyIdea);
+    $("startBtn").addEventListener("click", () => {
+      if (running) {
+        stopTimer();
+        $("timerStatus").textContent = "Таймер на паузе";
+      } else startTimer();
+    });
+    $("resetBtn").addEventListener("click", resetTimer);
+    renderTimer();
+  </script>
+</body>
+</html>
